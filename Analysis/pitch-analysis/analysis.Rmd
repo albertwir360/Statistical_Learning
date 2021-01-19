@@ -1,0 +1,112 @@
+---
+title: "MLB Pitching Classifier"
+author: "Albert Wiryawan (netid@illinois.edu)"
+date: "12/2/2020"
+output:
+  word_document:
+    toc: yes
+  html_document:
+    theme: default
+    toc: yes
+---
+
+```{r, setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
+```
+
+```{r, load-packages, include = FALSE}
+# load packages
+library("class")
+library("caret")
+```
+
+```{r read-data, warning = FALSE, message = FALSE}
+# read subset of data
+pitches_2020_regular = readr::read_csv("data/pitches_2020_regular.csv")
+pitches_2020_missing = readr::read_csv("data/pitches_2020_missing.csv")
+pitches_2020_post = readr::read_csv("data/pitches_2020_post.csv")
+```
+
+***
+
+## Abstract
+
+In this data exploration, MLB data from the 2020 regular and post season is collected. From here, the statistical learning method of k nearest neighbors is used to generate a model to classify the different types of pitches as either SI, SL, CH, FF, CU, FC, FS. Two approaches are used in order to optimize this model. Firstly, in order to decide on a value of k for the model varying models were built for k = 1,10,100 where their percent errors were found to be 17.93%, 14.84%, and 16.87% respectively. As a result, the model's hyper parameter was chosen to be 10. Then, further improvement in the model was obtained by normalizing the data as to prevent unit and outlier effects. The model error from the normalized model was found to be 10.08 which results in an overall accuracy of 89.92%. 
+
+***
+
+## Introduction
+
+In the game of baseball, the batter will guess the type of pitch by visually analyzing the movement of the ball. By doing so, the batting athlete can understand how to better hit the ball for the current situation of the field. For baseball athletes, this type of intuition is developed from years of practice. Utilizing data and statistical learning, however, a classifying model can be made to predict the pitch type given different attributes of a pitch. With the improvement of computers, data quality, and statistical understanding, baseball is a sport that is becoming more and more data driven. Being able to detect tendencies of a pitch type given certain amounts of data can help train and better the baseball athletes of today.
+
+***
+
+## Methods
+
+In this data exploration we will be utilizing the statistical learning method entitled: K-nearest neighbors or knn. In order to create a classification model that is effective in characterizing the type of pitch it is based on the data given. To do this, several initial models will be trained on an attribute filtered version of the data set collected from pitches thrown during the 2020 regular season of MLB, varying the hyper parameter k. Once created, these models will be tested with the pitches that are thrown during the post season to obtain a metric for accuracy of the models. 
+
+### Data
+
+With an initial look at the data, 
+```{r, echo=FALSE}
+head(pitches_2020_regular)
+count_na = function(x) {
+  sum(is.na(x))
+}
+sapply(pitches_2020_regular, count_na)
+sapply(pitches_2020_post, count_na)
+
+na.omit(pitches_2020_post)
+na.omit(pitches_2020_regular)
+```
+First, we notice that the data set contains na values that must be dealt with in order to train the model. In addition, there is only a certain number of features from the data set that will help in the understanding of velocity, location, and movements the ball which is what we will be focusing on. As a result, we have to turn the list of pitch_types into factors of class to help in the classification. 
+```{r}
+pitches_reg = pitches_2020_regular[, c(1,4,5,6,13:24)]
+pitches_post = pitches_2020_post[, c(1,4,5,6,13:24)]
+pitches_reg$pitch_type = factor(pitches_reg$pitch_type, level= c("SI", "SL", "CH", "FF", "CU", "FC", "FS"))
+pitches_post$pitch_type = factor(pitches_post$pitch_type, level= c("SI", "SL", "CH", "FF", "CU", "FC", "FS"))
+
+```
+
+### Modeling
+The models with varying tuning parameters of k are created varying from 1,10,100.
+```{r}
+knn_model1 = knn3(pitch_type ~ ., data = pitches_reg, k = 10)
+knn_model2 = knn3(pitch_type ~ ., data = pitches_reg, k = 100)
+knn_model3 = knn3(pitch_type ~ ., data = pitches_reg, k = 1)
+```
+
+
+```{r}
+tst_pred_un1 = predict(knn_model1, pitches_post, type = "class")
+tst_pred_un2 = predict(knn_model2, pitches_post, type = "class")
+tst_pred_un3 = predict(knn_model3, pitches_post, type = "class")
+
+
+calc_class_err = function(actual, predicted) {
+  mean(actual != predicted)
+}
+
+error1 = calc_class_err(pitches_post$pitch_type, tst_pred_un1)
+error2 = calc_class_err(pitches_post$pitch_type, tst_pred_un2)
+error3 = calc_class_err(pitches_post$pitch_type, tst_pred_un3)
+```
+
+The lowest calculated error was found when k =10. So we will utilize this hyper parameter and utilize it to try and further improve the model that is currently in possession. To do this, we want to try and create a scaled model as the different collected data values can really drastically in magnitude due to units. 
+
+
+
+***
+
+## Results
+
+Based on the models produced above the error in classification for the various different splits indicated by the hyper parameter value k, the values of error were found to be 17.93%, 14.84%, and 16.87% for k = 1, 10, 100 respectively.  This trend shows that the k value of 10 is the best for this model. In order to further improve the accuracy of the model, however, the model has their parameters scaled due to the different potential magnitude in units.  As a result, a scaled model is produced for a k-value of 10 and tested against the data set for pitches in the post season and obtained a 10.08% error rate. This further improvement in the model lead to the final obtained model, thus having an overall accuracy of 89.92% accuracy. 
+***
+
+## Discussion
+
+In this exploration of k nearest neighbors, two approaches were taken in order to improve the model. First, the tuning of hyper parameters is first assessed by trying values of k distance. For the statistical learning method of knn for classification, the tuning parameter k resembles the amount of nearest neighbors chosen to compare an overall distance to see which class is closest. In this case, the tuning parameter k = 10 was chosen as it obtained the lowest percentage of classification error. In addition to this, the model with the chosen hyper parameter is scaled in order to improve accuracy. This is done because the difference in the units of the collected data could present inaccuracies in the model. By, changing numeric attributes to a common scale, large distortion in data and outliers will no longer have a negative effect on the model. 
+
+***
+
+

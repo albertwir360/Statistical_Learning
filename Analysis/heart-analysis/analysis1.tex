@@ -1,0 +1,360 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Heart Data Analysis},
+  pdfauthor={Albert Wiryawan (avw2@illinois.edu)},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{Heart Data Analysis}
+\author{Albert Wiryawan
+(\href{mailto:avw2@illinois.edu}{\nolinkurl{avw2@illinois.edu}})}
+\date{12/9/2020}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{abstract}{%
+\subsection{Abstract}\label{abstract}}
+
+Heart disease is an illness that effects many people in the US and
+internationally. However, prevention and reduction treatments can be
+employed to minimize the damage at which this disease can cause. As
+such, this data exploration will focus on determining the number of
+major vessels with more than 50\% diameter narrowing. This create 5
+categoies in total with v0 indicating none, v1 indicating 1, v2,
+indicating 2, v3 indicating 3, and v4 indicating 4 major vessels
+narrowing. Through the manufacturing of a machine learning pipeline
+three different learning methods of decision tree, k nearest neighbor,
+and random forest were able to be tested. With a five fold cross
+validation of the data set accuracy metrics were able to be obtained
+which was 58.77 for random forest, 54.95 for decision tree, and 54.17
+for k nearest neighbor. Although this was able to be concluded, these
+results are not effective enough especially in the medical space. As
+such a different approach was suggested for the improvement of this that
+would clump groups v1-v4 together as a single category of having heart
+disease whereas v0 is not having heart disease. ***
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+According to a census collected by the Center for Disease Control and
+Prevention in 2015, heart disease has been determined as a leading cause
+of death deriving to 23.4\% of the total deaths in the United States.
+Luckily, there are some habitual actions that can help prevent and
+control heart disease. In this data exploration, a tool will be created
+to screen for heart disease -- essentially classifying a person as
+having five different blood types: v0 being 0 majors vessels with
+greater than 50\% diameter narrowing (no heart disease) and v1-v4 which
+is having 1-4 major vessels with greater than 50\% diameter narrowing.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{methods}{%
+\subsection{Methods}\label{methods}}
+
+In order to create this model, the statistical learning technique of:
+k-nearest neighbor (knn), decision tree (tree), and random forest (rf)
+will be used and validated through 5-fold cross validation on data that
+was not missing on data entry values. Each model will be trained and
+evaluated with one of the three learning techniques. The machine
+learning pipeline will enable us to obtain accuracies and train the
+model with less code using the 'caret package.
+
+\hypertarget{data}{%
+\subsubsection{Data}\label{data}}
+
+In order to create and test models for the predictive tool, the overall
+data set is split into train and test data sets in which 80\% will be
+used to train models while 20\% is used to test them.
+
+By checking the train heart disease data set, it can be seen that there
+are features that contain values of `na' or not available for values in
+some of their persons observations. As such, a general rule of thumb
+that will be applied in this analysis includes the elimination of data
+features that are missing more than 30\% of their data. This will be
+done for the train and test data sets that were created. Still, there
+are observations that will have NA for certain columns.
+
+In order to create suitable data for modeling, the rows that contain an
+NA will be stripped from the data set.
+
+Specifically describe the data and how it is used here.
+
+\hypertarget{modeling}{%
+\subsubsection{Modeling}\label{modeling}}
+
+A five fold cross validation will be used over the data set that is
+missing no data (having no NAs) to train and test the three different
+model creation methods. A machine learning pipeline is employed to
+reduce the amount of code necessary to test different model hyper
+parameters and acquire prediction accuracy metrics.
+
+\begin{verbatim}
+## CART 
+## 
+## 240 samples
+##  14 predictor
+##   5 classes: 'v0', 'v1', 'v2', 'v3', 'v4' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold) 
+## Summary of sample sizes: 192, 193, 193, 191, 191 
+## Resampling results across tuning parameters:
+## 
+##   cp           Accuracy   Kappa    
+##   0.000000000  0.5167517  0.2458453
+##   0.007070707  0.5125850  0.2273627
+##   0.014141414  0.5497521  0.2508682
+##   0.021212121  0.5540075  0.2562677
+##   0.028282828  0.5628655  0.2399301
+##   0.035353535  0.5583550  0.2282575
+##   0.042424242  0.5583550  0.2282575
+##   0.049494949  0.5583550  0.2282575
+##   0.056565657  0.5540997  0.2198183
+##   0.063636364  0.5501882  0.1233847
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was cp = 0.02828283.
+\end{verbatim}
+
+\begin{verbatim}
+## k-Nearest Neighbors 
+## 
+## 240 samples
+##  14 predictor
+##   5 classes: 'v0', 'v1', 'v2', 'v3', 'v4' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold) 
+## Summary of sample sizes: 191, 191, 193, 192, 193 
+## Resampling results across tuning parameters:
+## 
+##   k    Accuracy   Kappa      
+##     5  0.4661311  0.070146444
+##     7  0.4789007  0.079682981
+##     9  0.5083370  0.103657192
+##    11  0.5079009  0.088093883
+##    13  0.5118975  0.053665631
+##    15  0.5373372  0.091040518
+##    17  0.5289116  0.073801506
+##    19  0.5414188  0.095611760
+##    21  0.5416811  0.078298791
+##    23  0.5334328  0.043418117
+##    25  0.5418548  0.049609814
+##    27  0.5503655  0.065012333
+##    29  0.5419435  0.046458381
+##    31  0.5376882  0.034264327
+##    33  0.5376882  0.020715060
+##    35  0.5375995  0.021035551
+##    37  0.5375995  0.005869740
+##    39  0.5375995  0.009769461
+##    41  0.5418548  0.007789679
+##    43  0.5546208  0.040827846
+##    45  0.5461101  0.020095694
+##    47  0.5461101  0.012935323
+##    49  0.5461101  0.016226784
+##    51  0.5418548  0.000000000
+##    53  0.5418548  0.000000000
+##    55  0.5418548  0.000000000
+##    57  0.5418548  0.000000000
+##    59  0.5418548  0.000000000
+##    61  0.5418548  0.000000000
+##    63  0.5418548  0.000000000
+##    65  0.5418548  0.000000000
+##    67  0.5418548  0.000000000
+##    69  0.5418548  0.000000000
+##    71  0.5418548  0.000000000
+##    73  0.5418548  0.000000000
+##    75  0.5418548  0.000000000
+##    77  0.5418548  0.000000000
+##    79  0.5418548  0.000000000
+##    81  0.5418548  0.000000000
+##    83  0.5418548  0.000000000
+##    85  0.5418548  0.000000000
+##    87  0.5418548  0.000000000
+##    89  0.5418548  0.000000000
+##    91  0.5418548  0.000000000
+##    93  0.5418548  0.000000000
+##    95  0.5418548  0.000000000
+##    97  0.5418548  0.000000000
+##    99  0.5418548  0.000000000
+##   101  0.5418548  0.000000000
+##   103  0.5418548  0.000000000
+##   105  0.5418548  0.000000000
+##   107  0.5418548  0.000000000
+##   109  0.5418548  0.000000000
+##   111  0.5418548  0.000000000
+##   113  0.5418548  0.000000000
+##   115  0.5418548  0.000000000
+##   117  0.5418548  0.000000000
+##   119  0.5418548  0.000000000
+##   121  0.5418548  0.000000000
+##   123  0.5418548  0.000000000
+##   125  0.5418548  0.000000000
+##   127  0.5418548  0.000000000
+##   129  0.5418548  0.000000000
+##   131  0.5418548  0.000000000
+##   133  0.5418548  0.000000000
+##   135  0.5418548  0.000000000
+##   137  0.5418548  0.000000000
+##   139  0.5418548  0.000000000
+##   141  0.5418548  0.000000000
+##   143  0.5418548  0.000000000
+##   145  0.5418548  0.000000000
+##   147  0.5418548  0.000000000
+##   149  0.5418548  0.000000000
+##   151  0.5418548  0.000000000
+##   153  0.5418548  0.000000000
+##   155  0.5418548  0.000000000
+##   157  0.5418548  0.000000000
+##   159  0.5418548  0.000000000
+##   161  0.5418548  0.000000000
+##   163  0.5418548  0.000000000
+##   165  0.5418548  0.000000000
+##   167  0.5418548  0.000000000
+##   169  0.5418548  0.000000000
+##   171  0.5418548  0.000000000
+##   173  0.5418548  0.000000000
+##   175  0.5418548  0.000000000
+##   177  0.5418548  0.000000000
+##   179  0.5418548  0.000000000
+##   181  0.5418548  0.000000000
+##   183  0.5418548  0.000000000
+##   185  0.5418548  0.000000000
+##   187  0.5418548  0.000000000
+##   189  0.5418548  0.000000000
+##   191  0.5418548  0.000000000
+##   193  0.5418548  0.000000000
+##   195  0.5418548  0.000000000
+##   197  0.5418548  0.000000000
+##   199  0.5418548  0.000000000
+##   201  0.5418548  0.000000000
+##   203  0.5418548  0.000000000
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was k = 43.
+\end{verbatim}
+
+\begin{verbatim}
+## Random Forest 
+## 
+## 240 samples
+##  14 predictor
+##   5 classes: 'v0', 'v1', 'v2', 'v3', 'v4' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold) 
+## Summary of sample sizes: 193, 192, 192, 191, 192 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##    2    0.5876900  0.2538610
+##    8    0.5876086  0.3075859
+##   15    0.5539206  0.2623127
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 2.
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{results}{%
+\subsection{Results}\label{results}}
+
+It was determined that the model that produced the best result was the
+random forest learning model as it was able to guess the correct
+category of heart disease based on a persons non-invasive data roughly
+58.77\% of the time. This is slightly larger than the decision tree and
+knn model receiving 54.95\% and 54.17\% accuracy respectively.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{discussion}{%
+\subsection{Discussion}\label{discussion}}
+
+Although it was found that random forest learning model was the best for
+producing a model to predict someones heart disease type of the four
+categories, it does not seem to produce reassuring-- especially to a
+patient. As such, one way to improve the model to screen heart disease
+would bet to lump together the types of heart disease into one in order
+to have a binary classifier to predict whether someone has heart disease
+or not. Since both types of errors can be harmful (type I and type II)
+in the medical realm, this recommendation can drastically improve
+prediction as to better give treatment and recommendation to patients.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{appendix}{%
+\subsection{Appendix}\label{appendix}}
+
+\begin{verbatim}
+##         age         sex          cp    trestbps        chol         fbs 
+## 0.000000000 0.000000000 0.000000000 0.065040650 0.031165312 0.105691057 
+##     restecg     thalach       exang     oldpeak       slope          ca 
+## 0.002710027 0.059620596 0.059620596 0.069105691 0.327913279 0.662601626 
+##        thal         num    location 
+## 0.528455285 0.000000000 0.000000000
+\end{verbatim}
+
+\end{document}
